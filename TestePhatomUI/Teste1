@@ -1,0 +1,189 @@
+--// PHANTOM UI MODULE (V1)
+
+local PhantomUI = {}
+PhantomUI.__index = PhantomUI
+
+local TweenService = game:GetService("TweenService")
+local UIS = game:GetService("UserInputService")
+
+-- CONFIG
+local LOGO_URL = "https://raw.githubusercontent.com/blackxscripts/phantom/main/phantom-logo2.png"
+
+-- INIT
+function PhantomUI:Init()
+    local self = setmetatable({}, PhantomUI)
+
+    local gui = Instance.new("ScreenGui")
+    gui.Name = "PhantomUI"
+
+    pcall(function()
+        gui.Parent = game:GetService("CoreGui")
+    end)
+    if not gui.Parent then
+        gui.Parent = game.Players.LocalPlayer:WaitForChild("PlayerGui")
+    end
+
+    self.Gui = gui
+
+    -- MAIN
+    local main = Instance.new("Frame", gui)
+    main.Size = UDim2.new(0, 420, 0, 260)
+    main.Position = UDim2.new(0.5, -210, 0.5, -130)
+    main.BackgroundColor3 = Color3.fromRGB(15,15,15)
+    main.BorderSizePixel = 0
+    main.Active = true
+
+    Instance.new("UICorner", main).CornerRadius = UDim.new(0,12)
+
+    self.Main = main
+
+    -- TOP
+    local top = Instance.new("Frame", main)
+    top.Size = UDim2.new(1, 0, 0, 32)
+    top.BackgroundColor3 = Color3.fromRGB(20,20,20)
+    Instance.new("UICorner", top).CornerRadius = UDim.new(0,12)
+
+    local title = Instance.new("TextLabel", top)
+    title.Size = UDim2.new(1, -40, 1, 0)
+    title.Position = UDim2.new(0,35,0,0)
+    title.Text = "PHANTOM HUB"
+    title.TextColor3 = Color3.new(1,1,1)
+    title.BackgroundTransparency = 1
+    title.Font = Enum.Font.GothamBold
+    title.TextSize = 14
+    title.TextXAlignment = Enum.TextXAlignment.Left
+
+    local close = Instance.new("TextButton", top)
+    close.Size = UDim2.new(0, 32, 1, 0)
+    close.Position = UDim2.new(1, -32, 0, 0)
+    close.Text = "X"
+    close.BackgroundColor3 = Color3.fromRGB(25,25,25)
+    close.TextColor3 = Color3.new(1,1,1)
+    Instance.new("UICorner", close)
+
+    close.MouseButton1Click:Connect(function()
+        gui:Destroy()
+    end)
+
+    -- CONTAINER
+    local container = Instance.new("Frame", main)
+    container.Size = UDim2.new(1, -20, 1, -42)
+    container.Position = UDim2.new(0, 10, 0, 36)
+    container.BackgroundTransparency = 1
+
+    local layout = Instance.new("UIListLayout", container)
+    layout.Padding = UDim.new(0,8)
+
+    self.Container = container
+
+    return self
+end
+
+-- =====================
+-- BUTTON
+-- =====================
+function PhantomUI:CreateButton(text, callback)
+    local b = Instance.new("TextButton", self.Container)
+    b.Size = UDim2.new(1, 0, 0, 40)
+    b.Text = text
+    b.BackgroundColor3 = Color3.fromRGB(25,25,25)
+    b.TextColor3 = Color3.new(1,1,1)
+
+    Instance.new("UICorner", b)
+
+    b.MouseButton1Click:Connect(callback)
+end
+
+-- =====================
+-- TOGGLE
+-- =====================
+function PhantomUI:CreateToggle(text, callback)
+    local state = false
+
+    local frame = Instance.new("Frame", self.Container)
+    frame.Size = UDim2.new(1, 0, 0, 40)
+    frame.BackgroundColor3 = Color3.fromRGB(25,25,25)
+    Instance.new("UICorner", frame)
+
+    local label = Instance.new("TextLabel", frame)
+    label.Size = UDim2.new(0.7,0,1,0)
+    label.Text = text
+    label.BackgroundTransparency = 1
+    label.TextColor3 = Color3.new(1,1,1)
+    label.Font = Enum.Font.Gotham
+    label.TextSize = 13
+    label.TextXAlignment = Enum.TextXAlignment.Left
+
+    local toggle = Instance.new("Frame", frame)
+    toggle.Size = UDim2.new(0,40,0,20)
+    toggle.Position = UDim2.new(1,-50,0.5,-10)
+    toggle.BackgroundColor3 = Color3.fromRGB(50,50,50)
+    Instance.new("UICorner", toggle).CornerRadius = UDim.new(1,0)
+
+    local circle = Instance.new("Frame", toggle)
+    circle.Size = UDim2.new(0,18,0,18)
+    circle.Position = UDim2.new(0,1,0.5,-9)
+    circle.BackgroundColor3 = Color3.fromRGB(200,200,200)
+    Instance.new("UICorner", circle).CornerRadius = UDim.new(1,0)
+
+    frame.InputBegan:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1
+        or input.UserInputType == Enum.UserInputType.Touch then
+
+            state = not state
+
+            TweenService:Create(circle, TweenInfo.new(0.2), {
+                Position = state and UDim2.new(1,-19,0.5,-9) or UDim2.new(0,1,0.5,-9)
+            }):Play()
+
+            callback(state)
+        end
+    end)
+end
+
+-- =====================
+-- SLIDER (NOVO)
+-- =====================
+function PhantomUI:CreateSlider(text, min, max, callback)
+    local value = min
+
+    local frame = Instance.new("Frame", self.Container)
+    frame.Size = UDim2.new(1, 0, 0, 50)
+    frame.BackgroundColor3 = Color3.fromRGB(25,25,25)
+    Instance.new("UICorner", frame)
+
+    local label = Instance.new("TextLabel", frame)
+    label.Size = UDim2.new(1,0,0,20)
+    label.Text = text .. ": " .. value
+    label.BackgroundTransparency = 1
+    label.TextColor3 = Color3.new(1,1,1)
+
+    local bar = Instance.new("Frame", frame)
+    bar.Size = UDim2.new(1,-20,0,6)
+    bar.Position = UDim2.new(0,10,0,30)
+    bar.BackgroundColor3 = Color3.fromRGB(40,40,40)
+    Instance.new("UICorner", bar)
+
+    local fill = Instance.new("Frame", bar)
+    fill.Size = UDim2.new(0,0,1,0)
+    fill.BackgroundColor3 = Color3.fromRGB(255,255,255)
+    Instance.new("UICorner", fill)
+
+    bar.InputBegan:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1
+        or input.UserInputType == Enum.UserInputType.Touch then
+
+            local pos = (input.Position.X - bar.AbsolutePosition.X) / bar.AbsoluteSize.X
+            pos = math.clamp(pos, 0, 1)
+
+            value = math.floor(min + (max - min) * pos)
+
+            fill.Size = UDim2.new(pos,0,1,0)
+            label.Text = text .. ": " .. value
+
+            callback(value)
+        end
+    end)
+end
+
+return PhantomUI
