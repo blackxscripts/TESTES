@@ -1,0 +1,358 @@
+--// BLACK X PREMIUM HUB V1
+--// Rayfield UI
+--// By BLACK X SCRIPTS™
+
+local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
+
+local Players = game:GetService("Players")
+local UIS = game:GetService("UserInputService")
+local RunService = game:GetService("RunService")
+local TweenService = game:GetService("TweenService")
+
+local LocalPlayer = Players.LocalPlayer
+local Mouse = LocalPlayer:GetMouse()
+
+local Character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
+local Humanoid = Character:WaitForChild("Humanoid")
+local HumanoidRootPart = Character:WaitForChild("HumanoidRootPart")
+
+LocalPlayer.CharacterAdded:Connect(function(Char)
+	Character = Char
+	Humanoid = Char:WaitForChild("Humanoid")
+	HumanoidRootPart = Char:WaitForChild("HumanoidRootPart")
+end)
+
+--// WINDOW
+
+local Window = Rayfield:CreateWindow({
+	Name = "BLACK X PREMIUM HUB",
+	LoadingTitle = "BLACK X PREMIUM",
+	LoadingSubtitle = "Scripts Que Fazem a Diferença",
+	ConfigurationSaving = {
+		Enabled = true,
+		FolderName = "BlackXPremium",
+		FileName = "PremiumHub"
+	},
+	KeySystem = false
+})
+
+--// VARIABLES
+
+local Noclip = false
+local InfiniteJump = false
+local ClickTP = false
+local TweenTeleport = false
+local TweenSpeed = 100
+
+local SavedPositions = {
+	Slot1 = nil,
+	Slot2 = nil,
+	Slot3 = nil
+}
+
+--// SCREEN BUTTON FUNCTION
+
+local function CreateButton(Name, Callback)
+	local Existing = game.CoreGui:FindFirstChild(Name)
+	if Existing then Existing:Destroy() end
+	
+	local Gui = Instance.new("ScreenGui", game.CoreGui)
+	Gui.Name = Name
+	
+	local Button = Instance.new("TextButton", Gui)
+	Button.Size = UDim2.new(0,120,0,40)
+	Button.Position = UDim2.new(0,20,0,200)
+	Button.BackgroundColor3 = Color3.fromRGB(0,0,0)
+	Button.TextColor3 = Color3.fromRGB(255,255,255)
+	Button.Text = Name
+	Button.TextScaled = true
+	
+	local Corner = Instance.new("UICorner", Button)
+	
+	Button.MouseButton1Click:Connect(Callback)
+	
+	return Gui
+end
+
+--// TWEEN FUNCTION
+
+local function TweenTo(Position)
+	if not Character or not HumanoidRootPart then return end
+	
+	local Distance = (HumanoidRootPart.Position - Position).Magnitude
+	local Time = Distance / TweenSpeed
+	
+	local Tween = TweenService:Create(
+		HumanoidRootPart,
+		TweenInfo.new(Time, Enum.EasingStyle.Linear),
+		{CFrame = CFrame.new(Position)}
+	)
+	
+	Tween:Play()
+end
+
+--// NOCLIP LOOP
+
+RunService.Stepped:Connect(function()
+	if Noclip and Character then
+		for _,v in pairs(Character:GetDescendants()) do
+			if v:IsA("BasePart") then
+				v.CanCollide = false
+			end
+		end
+	end
+end)
+
+--// INFINITE JUMP
+
+UIS.JumpRequest:Connect(function()
+	if InfiniteJump and Humanoid then
+		Humanoid:ChangeState(Enum.HumanoidStateType.Jumping)
+	end
+end)
+
+--// CLICK TP LOOP
+
+Mouse.Button1Down:Connect(function()
+	if ClickTP then
+		local Pos = Mouse.Hit.Position
+		
+		if TweenTeleport then
+			TweenTo(Pos)
+		else
+			HumanoidRootPart.CFrame = CFrame.new(Pos + Vector3.new(0,5,0))
+		end
+	end
+end)
+
+--// TABS
+
+local MainTab = Window:CreateTab("Main", 4483362458)
+local PlayerTab = Window:CreateTab("Player", 4483362458)
+local TeleportTab = Window:CreateTab("Teleport", 4483362458)
+
+--// PLAYER TAB
+
+PlayerTab:CreateSlider({
+	Name = "WalkSpeed",
+	Range = {16, 200},
+	Increment = 1,
+	Suffix = "Speed",
+	CurrentValue = 16,
+	Callback = function(Value)
+		if Humanoid then
+			Humanoid.WalkSpeed = Value
+		end
+	end
+})
+
+PlayerTab:CreateSlider({
+	Name = "JumpPower",
+	Range = {50, 300},
+	Increment = 1,
+	Suffix = "Jump",
+	CurrentValue = 50,
+	Callback = function(Value)
+		if Humanoid then
+			Humanoid.JumpPower = Value
+		end
+	end
+})
+
+PlayerTab:CreateToggle({
+	Name = "Infinite Jump",
+	CurrentValue = false,
+	Callback = function(Value)
+		InfiniteJump = Value
+	end
+})
+
+--// NOCLIP
+
+MainTab:CreateToggle({
+	Name = "Noclip (Sem GUI)",
+	CurrentValue = false,
+	Callback = function(Value)
+		Noclip = Value
+	end
+})
+
+local NoclipGUI
+
+MainTab:CreateToggle({
+	Name = "Noclip (Com GUI)",
+	CurrentValue = false,
+	Callback = function(Value)
+		if Value then
+			NoclipGUI = CreateButton("NOCLIP", function()
+				Noclip = not Noclip
+			end)
+		else
+			if NoclipGUI then
+				NoclipGUI:Destroy()
+			end
+		end
+	end
+})
+
+--// CLICK TP
+
+MainTab:CreateToggle({
+	Name = "Click TP (Sem GUI)",
+	CurrentValue = false,
+	Callback = function(Value)
+		ClickTP = Value
+	end
+})
+
+local ClickGUI
+
+MainTab:CreateToggle({
+	Name = "Click TP (Com GUI)",
+	CurrentValue = false,
+	Callback = function(Value)
+		if Value then
+			ClickGUI = CreateButton("CLICK TP", function()
+				ClickTP = not ClickTP
+			end)
+		else
+			if ClickGUI then
+				ClickGUI:Destroy()
+			end
+		end
+	end
+})
+
+--// TWEEN
+
+TeleportTab:CreateToggle({
+	Name = "Tween Teleport",
+	CurrentValue = false,
+	Callback = function(Value)
+		TweenTeleport = Value
+	end
+})
+
+TeleportTab:CreateSlider({
+	Name = "Tween Speed",
+	Range = {50, 500},
+	Increment = 5,
+	Suffix = "Speed",
+	CurrentValue = 100,
+	Callback = function(Value)
+		TweenSpeed = Value
+	end
+})
+
+--// SAVE POSITIONS
+
+TeleportTab:CreateButton({
+	Name = "Salvar Slot 1",
+	Callback = function()
+		SavedPositions.Slot1 = HumanoidRootPart.CFrame
+	end
+})
+
+TeleportTab:CreateButton({
+	Name = "Teleportar Slot 1",
+	Callback = function()
+		if SavedPositions.Slot1 then
+			if TweenTeleport then
+				TweenTo(SavedPositions.Slot1.Position)
+			else
+				HumanoidRootPart.CFrame = SavedPositions.Slot1
+			end
+		end
+	end
+})
+
+TeleportTab:CreateButton({
+	Name = "Salvar Slot 2",
+	Callback = function()
+		SavedPositions.Slot2 = HumanoidRootPart.CFrame
+	end
+})
+
+TeleportTab:CreateButton({
+	Name = "Teleportar Slot 2",
+	Callback = function()
+		if SavedPositions.Slot2 then
+			if TweenTeleport then
+				TweenTo(SavedPositions.Slot2.Position)
+			else
+				HumanoidRootPart.CFrame = SavedPositions.Slot2
+			end
+		end
+	end
+})
+
+TeleportTab:CreateButton({
+	Name = "Salvar Slot 3",
+	Callback = function()
+		SavedPositions.Slot3 = HumanoidRootPart.CFrame
+	end
+})
+
+TeleportTab:CreateButton({
+	Name = "Teleportar Slot 3",
+	Callback = function()
+		if SavedPositions.Slot3 then
+			if TweenTeleport then
+				TweenTo(SavedPositions.Slot3.Position)
+			else
+				HumanoidRootPart.CFrame = SavedPositions.Slot3
+			end
+		end
+	end
+})
+
+--// PLAYER LIST
+
+local SelectedPlayer = nil
+
+local Dropdown = TeleportTab:CreateDropdown({
+	Name = "Selecionar Player",
+	Options = {},
+	CurrentOption = {},
+	MultipleOptions = false,
+	Callback = function(Value)
+		SelectedPlayer = Value[1]
+	end
+})
+
+local function UpdatePlayers()
+	local Names = {}
+	
+	for _,Player in pairs(Players:GetPlayers()) do
+		if Player ~= LocalPlayer then
+			table.insert(Names, Player.Name)
+		end
+	end
+	
+	Dropdown:Refresh(Names)
+end
+
+UpdatePlayers()
+
+Players.PlayerAdded:Connect(UpdatePlayers)
+Players.PlayerRemoving:Connect(UpdatePlayers)
+
+TeleportTab:CreateButton({
+	Name = "Teleportar Para Player",
+	Callback = function()
+		if SelectedPlayer then
+			local Target = Players:FindFirstChild(SelectedPlayer)
+			
+			if Target and Target.Character and Target.Character:FindFirstChild("HumanoidRootPart") then
+				
+				local Pos = Target.Character.HumanoidRootPart.Position
+				
+				if TweenTeleport then
+					TweenTo(Pos)
+				else
+					HumanoidRootPart.CFrame = CFrame.new(Pos + Vector3.new(0,5,0))
+				end
+			end
+		end
+	end
+})
