@@ -1,5 +1,3 @@
---// AUTO FARM FUNCTION
-
 function CheckQuest()
     local MyLevel = game:GetService("Players").LocalPlayer.Data.Level.Value
 
@@ -46,7 +44,9 @@ function CheckQuest()
 end
 
 function AutoFarmLevel50()
+
     task.spawn(function()
+
         while task.wait() do
             pcall(function()
 
@@ -58,9 +58,7 @@ function AutoFarmLevel50()
                 local Character = Player.Character
                 local HRP = Character:WaitForChild("HumanoidRootPart")
 
-                local Level = Player.Data.Level.Value
-
-                if Level >= 50 then
+                if Player.Data.Level.Value >= 50 then
                     _G.AutoFarmLevel = false
                     return
                 end
@@ -68,19 +66,22 @@ function AutoFarmLevel50()
                 CheckQuest()
 
                 if not Player.PlayerGui.Main.Quest.Visible then
+
                     Tween(CFrameQuest)
 
                     repeat task.wait()
                     until (HRP.Position - CFrameQuest.Position).Magnitude <= 10
 
-                    game:GetService("ReplicatedStorage").Remotes.CommF_:InvokeServer(
-                        "StartQuest",
-                        NameQuest,
-                        LevelQuest
-                    )
+                    game:GetService("ReplicatedStorage")
+                        .Remotes.CommF_:InvokeServer(
+                            "StartQuest",
+                            NameQuest,
+                            LevelQuest
+                        )
                 end
 
                 for i,v in pairs(game.Workspace.Enemies:GetChildren()) do
+
                     if v.Name == Mon
                     and v:FindFirstChild("Humanoid")
                     and v:FindFirstChild("HumanoidRootPart")
@@ -92,26 +93,35 @@ function AutoFarmLevel50()
                                 break
                             end
 
-                            Character.Humanoid:EquipTool(
+                            local Tool =
                                 Player.Backpack:FindFirstChildOfClass("Tool")
-                            )
+
+                            if Tool then
+                                Character.Humanoid:EquipTool(Tool)
+                            end
 
                             v.HumanoidRootPart.CanCollide = false
 
-                            Tween(v.HumanoidRootPart.CFrame * CFrame.new(0,25,0))
+                            Tween(
+                                v.HumanoidRootPart.CFrame *
+                                CFrame.new(0,25,0)
+                            )
 
                             HRP.CFrame =
-                                v.HumanoidRootPart.CFrame * CFrame.new(0,25,0)
+                                v.HumanoidRootPart.CFrame *
+                                CFrame.new(0,25,0)
 
-                            game:GetService("VirtualUser"):CaptureController()
-                            game:GetService("VirtualUser"):Button1Down(Vector2.new(1280,672))
+                            game:GetService("VirtualUser")
+                                :CaptureController()
+
+                            game:GetService("VirtualUser")
+                                :Button1Down(Vector2.new(1280,672))
 
                         until v.Humanoid.Health <= 0
                         or not v.Parent
                         or Player.Data.Level.Value >= 50
                     end
                 end
-
             end)
         end
     end)
