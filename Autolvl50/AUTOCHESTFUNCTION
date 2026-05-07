@@ -1,0 +1,76 @@
+local ChestTween
+
+local ChestList = {
+    CFrame.new(1100,16,1630),
+    CFrame.new(-1400,30,20),
+    CFrame.new(-1200,15,3900),
+    CFrame.new(-5000,315,-3000)
+}
+
+function StopChestTween()
+    if ChestTween then
+        ChestTween:Cancel()
+    end
+end
+
+function TweenChest(Pos)
+
+    local Player = game.Players.LocalPlayer
+    local HRP = Player.Character:WaitForChild("HumanoidRootPart")
+
+    local Distance =
+        (HRP.Position - Pos.Position).Magnitude
+
+    local TweenInfo_ = TweenInfo.new(
+        Distance / 300,
+        Enum.EasingStyle.Linear
+    )
+
+    StopChestTween()
+
+    ChestTween = game:GetService("TweenService"):Create(
+        HRP,
+        TweenInfo_,
+        {CFrame = Pos}
+    )
+
+    ChestTween:Play()
+end
+
+function AutoChest100K()
+
+    task.spawn(function()
+
+        while task.wait() do
+            pcall(function()
+
+                if not _G.AutoChest then
+                    return
+                end
+
+                local Player = game.Players.LocalPlayer
+                local Character = Player.Character
+                local HRP = Character:WaitForChild("HumanoidRootPart")
+
+                if Player.Data.Beli.Value >= 100000 then
+                    _G.AutoChest = false
+                    StopChestTween()
+                    return
+                end
+
+                for _,Pos in pairs(ChestList) do
+
+                    if not _G.AutoChest then
+                        break
+                    end
+
+                    TweenChest(Pos)
+
+                    repeat task.wait()
+                    until (HRP.Position - Pos.Position).Magnitude <= 10
+                    or not _G.AutoChest
+                end
+            end)
+        end
+    end)
+end
