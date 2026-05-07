@@ -1,0 +1,118 @@
+--// AUTO FARM FUNCTION
+
+function CheckQuest()
+    local MyLevel = game:GetService("Players").LocalPlayer.Data.Level.Value
+
+    if MyLevel >= 1 and MyLevel <= 9 then
+        Mon = "Bandit"
+        LevelQuest = 1
+        NameQuest = "BanditQuest1"
+
+        CFrameQuest = CFrame.new(1059,15,1550)
+        CFrameMon = CFrame.new(1045,27,1560)
+
+    elseif MyLevel >= 10 and MyLevel <= 14 then
+        Mon = "Monkey"
+        LevelQuest = 1
+        NameQuest = "JungleQuest"
+
+        CFrameQuest = CFrame.new(-1598,35,153)
+        CFrameMon = CFrame.new(-1448,67,11)
+
+    elseif MyLevel >= 15 and MyLevel <= 29 then
+        Mon = "Gorilla"
+        LevelQuest = 2
+        NameQuest = "JungleQuest"
+
+        CFrameQuest = CFrame.new(-1598,35,153)
+        CFrameMon = CFrame.new(-1129,40,-525)
+
+    elseif MyLevel >= 30 and MyLevel <= 39 then
+        Mon = "Pirate"
+        LevelQuest = 1
+        NameQuest = "BuggyQuest1"
+
+        CFrameQuest = CFrame.new(-1141,4,3831)
+        CFrameMon = CFrame.new(-1103,13,3896)
+
+    elseif MyLevel >= 40 and MyLevel <= 59 then
+        Mon = "Brute"
+        LevelQuest = 2
+        NameQuest = "BuggyQuest1"
+
+        CFrameQuest = CFrame.new(-1141,4,3831)
+        CFrameMon = CFrame.new(-1140,14,4322)
+    end
+end
+
+function AutoFarmLevel50()
+    task.spawn(function()
+        while task.wait() do
+            pcall(function()
+
+                if not _G.AutoFarmLevel then
+                    return
+                end
+
+                local Player = game.Players.LocalPlayer
+                local Character = Player.Character
+                local HRP = Character:WaitForChild("HumanoidRootPart")
+
+                local Level = Player.Data.Level.Value
+
+                if Level >= 50 then
+                    _G.AutoFarmLevel = false
+                    return
+                end
+
+                CheckQuest()
+
+                if not Player.PlayerGui.Main.Quest.Visible then
+                    Tween(CFrameQuest)
+
+                    repeat task.wait()
+                    until (HRP.Position - CFrameQuest.Position).Magnitude <= 10
+
+                    game:GetService("ReplicatedStorage").Remotes.CommF_:InvokeServer(
+                        "StartQuest",
+                        NameQuest,
+                        LevelQuest
+                    )
+                end
+
+                for i,v in pairs(game.Workspace.Enemies:GetChildren()) do
+                    if v.Name == Mon
+                    and v:FindFirstChild("Humanoid")
+                    and v:FindFirstChild("HumanoidRootPart")
+                    and v.Humanoid.Health > 0 then
+
+                        repeat task.wait()
+
+                            if not _G.AutoFarmLevel then
+                                break
+                            end
+
+                            Character.Humanoid:EquipTool(
+                                Player.Backpack:FindFirstChildOfClass("Tool")
+                            )
+
+                            v.HumanoidRootPart.CanCollide = false
+
+                            Tween(v.HumanoidRootPart.CFrame * CFrame.new(0,25,0))
+
+                            HRP.CFrame =
+                                v.HumanoidRootPart.CFrame * CFrame.new(0,25,0)
+
+                            game:GetService("VirtualUser"):CaptureController()
+                            game:GetService("VirtualUser"):Button1Down(Vector2.new(1280,672))
+
+                        until v.Humanoid.Health <= 0
+                        or not v.Parent
+                        or Player.Data.Level.Value >= 50
+                    end
+                end
+
+            end)
+        end
+    end)
+end
